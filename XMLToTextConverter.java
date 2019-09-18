@@ -10,6 +10,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.TransformerException;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -36,14 +37,13 @@ public class XMLToTextConverter{
     private String storeXMLtoString() throws IOException{
 
         BufferedReader br = new BufferedReader(new FileReader(this.xmlFileName));
-        StringBuilder sb = new StringBuilder();
+        String xml = "";
 
         try{
             String line = br.readLine();
-
             while (line != null){
 
-                sb.append(line);
+                xml += line;
                 line = br.readLine();
             }
         }   
@@ -55,9 +55,8 @@ public class XMLToTextConverter{
         finally{
             br.close();
         }
-
-        // System.out.println(sb.toString());
-        return sb.toString();
+        xml = xml.trim().replaceFirst("^([\\W]+)<","<");
+        return xml;
 
     }
 
@@ -82,37 +81,40 @@ public class XMLToTextConverter{
         return doc;
     }
 
-    // public void beautifyXMLString() throws IOException, TransformerConfigurationException{
+
+    private String beautifyXMLDoc() throws TransformerConfigurationException, TransformerException, ParserConfigurationException, SAXException, IOException {
+
+        String beautifiedXMLString = "";
 
         
-    //     try{
+        try{
+            
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+    
+            StreamResult result = new StreamResult(new StringWriter());
+            DOMSource source = new DOMSource(convertStringToDocument());
+            transformer.transform(source, result);
+            beautifiedXMLString = result.getWriter().toString();
+        }
 
-    //         Transformer transformer = TransformerFactory.newInstance().newTransformer();
-    //         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-    //         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+        catch (ParserConfigurationException | SAXException | IOException | TransformerException e){
 
-    //         StreamResult result = new StreamResult(new StringWriter());
-    //         DOMSource source = new DOMSource(this.xmlFileName);
+            e.printStackTrace();
+        }
 
-    //     }
+        return beautifiedXMLString;
 
-    //     catch (TransformerConfigurationException e){
-
-    //         e.printStackTrace();
-
-    //     }
-
-    //     finally{
-
-
-    //     }
-       
-    // }
-
-    public String getXMLFilePath(){
-        return this.xmlFileName;
     }
 
+    public void writeBeautifiedXMLToAFile() throws TransformerConfigurationException, TransformerException, ParserConfigurationException, SAXException, IOException{
+
+        System.out.println("end of beautified");
+        
+        System.out.println(beautifyXMLDoc());
+
+    }
 
 
 
