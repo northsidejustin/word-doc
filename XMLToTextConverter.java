@@ -36,6 +36,9 @@ public class XMLToTextConverter{
 
     private String storeXMLtoString() throws IOException{
 
+        //BufferedReader doesn't recognize the special single quote / double quote
+        //cannot be distinguished by a special character either
+        //any way to distinguish 
         BufferedReader br = new BufferedReader(new FileReader(this.xmlFileName));
         String xml = "";
 
